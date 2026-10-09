@@ -1,0 +1,49 @@
+name: Update GitHub Stats
+
+on:
+  schedule:
+    # 每天 03:17 UTC（北京时间 11:17），避开整点高峰
+    - cron: "17 3 * * *"
+  # 支持在 Actions 页面手动触发
+  workflow_dispatch:
+
+# 需要写权限才能把生成好的 SVG 提交回仓库
+permissions:
+  contents: write
+
+concurrency:
+  group: update-stats
+  cancel-in-progress: false
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 检出仓库
+        uses: actions/checkout@v4
+
+      - name: 准备 Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: 生成统计卡片
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_LOGIN: ${{ github.repository_owner }}
+          # 若 GITHUB_TOKEN 读不到贡献数据（GraphQL 返回权限错误），
+          # 改为使用自建 PAT：先在仓库 Secrets 里添加 STATS_TOKEN，再换成下面这行
+          # GITHUB_TOKEN: ${{ secrets.STATS_TOKEN }}
+        run: node scripts/gen-stats.mjs
+
+      - name: 提交变更
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets/stats/stats-light.svg assets/stats/stats-dark.svg
+          if git diff --staged --quiet; then
+            echo "卡片无变化，跳过提交"
+          else
+            git commit -m "chore(stats): 更新统计卡片"
+            git push
+          fi

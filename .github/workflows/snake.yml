@@ -1,0 +1,50 @@
+name: Update Contribution Snake
+
+on:
+  schedule:
+    # 每天 03:47 UTC（北京时间 11:47），与统计卡错开时间
+    - cron: "47 3 * * *"
+  # 支持在 Actions 页面手动触发
+  workflow_dispatch:
+  push:
+    # 首次把本文件推上去时立刻生成一次，避免 README 里的图长期是裂图
+    # GITHUB_TOKEN 自己发起的推送不会触发 workflow，所以不会造成循环
+    paths:
+      - ".github/workflows/snake.yml"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: update-snake
+  cancel-in-progress: false
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 检出仓库
+        uses: actions/checkout@v4
+
+      - name: 生成贪吃蛇 SVG
+        uses: Platane/snk/svg-only@v3
+        with:
+          github_user_name: ${{ github.repository_owner }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          outputs: |
+            dist/snake.svg
+            dist/snake-dark.svg?palette=github-dark
+
+      - name: 提交到 assets/snake
+        run: |
+          mkdir -p assets/snake
+          cp dist/snake.svg dist/snake-dark.svg assets/snake/
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets/snake
+          if git diff --staged --quiet; then
+            echo "贪吃蛇无变化，跳过提交"
+          else
+            git commit -m "chore(snake): 更新贡献动画"
+            git push
+          fi
