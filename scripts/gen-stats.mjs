@@ -76,7 +76,13 @@ async function gql(query, variables, token) {
   return json.data;
 }
 
-/** 上游用的查询字段，仅去掉本卡片不需要的可选部分（merged PR / discussions） */
+/**
+ * 上游用的查询字段，仅去掉本卡片不需要的可选部分（merged PR / discussions）。
+ *
+ * 与上游的一处有意偏差：star 统计用 ownerAffiliations: [OWNER, ORGANIZATION_MEMBER]，
+ * 把「你是成员的组织」名下的仓库一并计入（上游只用 OWNER）。
+ * 刻意不含 COLLABORATOR，避免把别人名下、你只是协作者的仓库算进来。
+ */
 const Q_USER_STATS = `
   query userInfo($login: String!) {
     user(login: $login) {
@@ -100,7 +106,7 @@ const Q_USER_STATS = `
       followers {
         totalCount
       }
-      repositories(first: 100, ownerAffiliations: OWNER, orderBy: {direction: DESC, field: STARGAZERS}) {
+      repositories(first: 100, ownerAffiliations: [OWNER, ORGANIZATION_MEMBER], orderBy: {direction: DESC, field: STARGAZERS}) {
         totalCount
         nodes {
           name
