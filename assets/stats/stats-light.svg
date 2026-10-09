@@ -9,7 +9,7 @@
         aria-labelledby="descId"
       >
         <title id="titleId">Ppc's GitHub Stats, Rank: B+</title>
-        <desc id="descId">Total Stars Earned: 1193, Total Commits  : 1335, Total PRs: 44, Total Issues: 4, Contributed to (last year): 38</desc>
+        <desc id="descId">Total Stars Earned: 1195, Total Commits  : 1337, Total PRs: 44, Total Issues: 4, Contributed to (last year): 38</desc>
         <style>
           .header {
             font: 600 18px 'Segoe UI', Ubuntu, Sans-Serif;
@@ -73,7 +73,7 @@
         stroke-dashoffset: 251.32741228718345;
       }
       to {
-        stroke-dashoffset: 105.43955898022543;
+        stroke-dashoffset: 105.41114335185875;
       }
     }
   
