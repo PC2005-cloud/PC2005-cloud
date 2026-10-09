@@ -35,11 +35,13 @@ jobs:
 
       - name: 生成统计卡片
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # 不能用 secrets.GITHUB_TOKEN：它是安装令牌，只对挂载它的这个仓库有权限，
+          # 枚举本账号其它仓库的 stargazers 会返回 FORBIDDEN
+          # "Resource not accessible by integration"，整个 Job 直接失败。
+          # 实测同一查询里 contributionsCollection / pullRequests / issues /
+          # repositoriesContributedTo 都能通过，权限缺口只在 stargazers 这一处。
+          GITHUB_TOKEN: ${{ secrets.STATS_TOKEN }}
           GITHUB_LOGIN: ${{ github.repository_owner }}
-          # 若 GITHUB_TOKEN 读不到贡献数据（GraphQL 返回权限错误），
-          # 改为使用自建 PAT：先在仓库 Secrets 里添加 STATS_TOKEN，再换成下面这行
-          # GITHUB_TOKEN: ${{ secrets.STATS_TOKEN }}
         run: node scripts/gen-stats.mjs
 
       - name: 提交变更
