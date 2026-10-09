@@ -6,6 +6,12 @@ on:
     - cron: "17 3 * * *"
   # 支持在 Actions 页面手动触发
   workflow_dispatch:
+  push:
+    # 改动本文件时立刻跑一次，便于验证工作流改动，不必等 cron 或手动触发。
+    # 限定 paths：机器人提交的是 assets/stats/，不匹配这里，所以不会自触发；
+    # 即便日后把 GITHUB_TOKEN 换成自建 PAT，也不存在递归触发的风险。
+    paths:
+      - ".github/workflows/stats.yml"
 
 # 需要写权限才能把生成好的 SVG 提交回仓库
 permissions:
